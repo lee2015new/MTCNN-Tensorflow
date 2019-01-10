@@ -79,10 +79,14 @@ def center_loss(features, label, alfa, nrof_classes):
 def get_image_paths_and_labels(dataset):
     image_paths_flat = []
     labels_flat = []
+    labels_name = ""
     for i in range(len(dataset)):
         image_paths_flat += dataset[i].image_paths
         labels_flat += [i] * len(dataset[i].image_paths)
-    return image_paths_flat, labels_flat
+        labels_name += dataset[i].name + ";"
+    labelsNm = labels_name[0:-1].split(";")
+    print('##############', labelsNm)
+    return image_paths_flat, labels_flat, labelsNm
 
 def shuffle_examples(image_paths, labels):
     shuffle_list = list(zip(image_paths, labels))

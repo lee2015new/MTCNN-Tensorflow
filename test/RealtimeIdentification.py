@@ -25,9 +25,10 @@ def face2database(picture_path,model_path,database_path,batch_size=90,image_size
     with tf.Graph().as_default():
         with tf.Session() as sess:
             dataset = facenet.get_dataset(picture_path)
-            paths, labels = facenet.get_image_paths_and_labels(dataset)
+            paths, labels, labels_name = facenet.get_image_paths_and_labels(dataset)
             print('Number of classes: %d' % len(dataset))
             print('Number of images: %d' % len(paths))
+            print('Labels:' , labels_name)
             # Load the model
             print('Loading feature extraction model')
             facenet.load_model(model_path)
@@ -48,7 +49,7 @@ def face2database(picture_path,model_path,database_path,batch_size=90,image_size
                 images = facenet.load_data(paths_batch, False, False,image_size)
                 feed_dict = { images_placeholder:images, phase_train_placeholder:False }
                 emb_array[start_index:end_index,:] = sess.run(embeddings, feed_dict=feed_dict)
-            np.savez(database_path,emb=emb_array,lab=labels)
+            np.savez(database_path,emb=emb_array,lab=labels, labNm=labels_name)
             print("数据库特征提取完毕！")
             #emb_array里存放的是图片特征，labels为对应的标签
 
@@ -59,6 +60,7 @@ def ClassifyTrainSVC(database_path,SVCpath):
     Database=np.load(database_path)
     name_lables=Database['lab']
     embeddings=Database['emb']
+    lable_name = Database['labNm']
     name_unique=np.unique(name_lables)
     labels=[]
     for i in range(len(name_lables)):
@@ -69,7 +71,7 @@ def ClassifyTrainSVC(database_path,SVCpath):
     model = SVC(kernel='linear', probability=True)
     model.fit(embeddings, labels)
     with open(SVCpath, 'wb') as outfile:
-        pickle.dump((model,name_unique), outfile)
+        pickle.dump((model,lable_name), outfile)
         print('Saved classifier model to file "%s"' % SVCpath)
 
 
@@ -85,6 +87,7 @@ def RTrecognization(facenet_model_path, SVCpath, database_path):
             with open(SVCpath, 'rb') as infile:
                 (classifymodel, class_names) = pickle.load(infile)
             print('Loaded classifier model from file "%s"' % SVCpath)
+            print(class_names)
 
             # Get input and output tensors
             images_placeholder = tf.get_default_graph().get_tensor_by_name("input:0")
