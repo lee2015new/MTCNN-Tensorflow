@@ -50,6 +50,7 @@ def face2database(picture_path,model_path,database_path,batch_size=90,image_size
                 feed_dict = { images_placeholder:images, phase_train_placeholder:False }
                 emb_array[start_index:end_index,:] = sess.run(embeddings, feed_dict=feed_dict)
             np.savez(database_path,emb=emb_array,lab=labels, labNm=labels_name)
+            print(emb_array)
             print("数据库特征提取完毕！")
             #emb_array里存放的是图片特征，labels为对应的标签
 
@@ -198,6 +199,6 @@ if __name__ == "__main__":
     model_path = "../data/face_models/20180408-102900"
     database_path = "../data/database/Database.npz"
     SVCpath = "../data/SVCmodel/SVCmodel.pkl"
-    # face2database(picture_path, model_path, database_path)
-    # ClassifyTrainSVC(database_path, SVCpath)
-    RTrecognization(model_path, SVCpath, database_path)
+    face2database(picture_path, model_path, database_path)
+    ClassifyTrainSVC(database_path, SVCpath)
+    # RTrecognization(model_path, SVCpath, database_path)
