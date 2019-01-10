@@ -43,14 +43,15 @@ def face2database(picture_path,model_path,database_path,batch_size=90,image_size
             nrof_batches_per_epoch = int(math.ceil(1.0*nrof_images / batch_size))
             emb_array = np.zeros((nrof_images, embedding_size))
 
-            mtcnn_detector = getMtcnnDetector()
+            # mtcnn_detector = getMtcnnDetector()
 
             for i in range(nrof_batches_per_epoch):
                 start_index = i*batch_size
                 end_index = min((i+1)*batch_size, nrof_images)
                 paths_batch = paths[start_index:end_index]
                 # images = facenet.load_data(paths_batch, False, False,image_size)
-                images = load_data_mtcnn(mtcnn_detector, paths_batch, image_size)
+                images = load_data(paths_batch, False, False,image_size)
+                # images = load_data_mtcnn(mtcnn_detector, paths_batch, image_size)
                 feed_dict = { images_placeholder:images, phase_train_placeholder:False }
                 emb_array[start_index:end_index,:] = sess.run(embeddings, feed_dict=feed_dict)
             np.savez(database_path,emb=emb_array,lab=labels, labNm=labels_name)
@@ -79,6 +80,16 @@ def load_data_mtcnn(mtcnn_detector, image_paths, image_size):
         images[i, :, :, :] = img2
 
     # print(images)
+    return images
+
+def load_data(image_paths, do_random_crop, do_random_flip, image_size, do_prewhiten=True):
+    nrof_samples = len(image_paths)
+    images = np.zeros((nrof_samples, image_size, image_size, 3))
+    for i in range(nrof_samples):
+        img = misc.imread(image_paths[i], mode="RGB")
+        img = misc.imresize(img, (160, 160), interp='bilinear')
+        img = np.reshape(img, (-1, 160, 160, 3))
+        images[i,:,:,:] = img
     return images
 
 
