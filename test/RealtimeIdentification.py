@@ -188,7 +188,6 @@ def RTrecognization(facenet_model_path, SVCpath, database_path):
                         predictions = classifymodel.predict_proba(embvecor)
                         print("predictions",predictions)
                         best_class_indices = np.argmax(predictions, axis=1)
-                        print("best_class_indices",best_class_indices)
                         tmp_lable = class_names[best_class_indices]
                         best_class_probabilities = predictions[np.arange(len(best_class_indices)), best_class_indices]
                         print(best_class_probabilities)
